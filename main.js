@@ -1,3 +1,15 @@
+const mainScene = {
+  key: 'MainScene',
+  preload: preload,
+  create: create,
+  update: update,
+};
+
+const settingsScene = {
+  key: 'SettingsScene',
+  create: createSettings,
+};
+
 const config = {
   type: Phaser.AUTO,
   width: 800,
@@ -7,12 +19,7 @@ const config = {
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   backgroundColor: '#1a1a2e',
-  scene: {
-    preload: preload,
-    create: create,
-    update: update,
-  },
-  // scene: [MainScene, SettingsScene],
+  scene: [mainScene, settingsScene],
 };
 
 const game = new Phaser.Game(config);
@@ -36,12 +43,15 @@ let autoClickUpgradeText;
 let autoClickUpgradeButton;
 
 let soundOffButton;
+let soundEnabled;
 
 let timeSinceAutoClick = 0;
 
 let progress = 0;
 let progressBarBg;
 let progressBarFill;
+
+let settingsButton;
 
 const levelColors = [
   0x0f3460, // уровень 1 — начальный тёмно-синий
@@ -66,6 +76,17 @@ function preload() {
 }
 
 function create() {
+  // кнопка настройки
+  settingsButton = this.add
+    .text(750, 30, '⚙', { fontSize: '32px', color: '#fff' })
+    .setOrigin(0.5)
+    .setInteractive({ useHandCursor: true });
+
+  settingsButton.on('pointerdown', () => {
+    this.scene.start('SettingsScene');
+    // createSettings();
+  });
+
   // текст с счетом на верху
   moneyText = this.add
     .text(400, 80, '0 ₽', {
@@ -183,6 +204,38 @@ function create() {
   // сохранение перед закрытие и перезагрузкой страницы
   window.addEventListener('beforeunload', () => {
     saveGame();
+  });
+}
+
+function createSettings() {
+  this.add
+    .text(400, 100, 'Настройки', { fontSize: '36px', color: '#fff' })
+    .setOrigin(0.5);
+
+  // переключатель звука
+  const soundToggleText = this.add
+    .text(400, 250, `Звук: ${soundEnabled ? 'Вкл' : 'Выкл'}`, {
+      fontSize: '28px',
+      color: '#fff',
+    })
+    .setOrigin(0.5)
+    .setInteractive({ useHandCursor: true });
+
+  soundToggleText.on('pointerdown', () => {
+    soundEnabled = !soundEnabled;
+    this.sound.mute = !soundEnabled; // глобальный mute на весь звук игры
+    soundToggleText.setText(`Звук: ${soundEnabled ? 'Вкл' : 'Выкл'}`);
+    saveGame();
+  });
+
+  // кнопка назад
+  const backButton = this.add
+    .text(400, 500, '← Назад', { fontSize: '24px', color: '#fff' })
+    .setOrigin(0.5)
+    .setInteractive({ useHandCursor: true });
+
+  backButton.on('pointerdown', () => {
+    this.scene.start('MainScene');
   });
 }
 
